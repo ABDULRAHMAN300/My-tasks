@@ -1,0 +1,710 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>مهامي</title>
+<meta name="description" content="مهامي اليومية مرتبة بالأهمية مع وقت بداية اختياري ومزامنة بين الأجهزة">
+<meta name="theme-color" content="#7B2FF7">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="مهامي">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Kufi+Arabic:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F1FF; --surface:#FFFFFF; --ink:#241B3A; --muted:#6F6788; --line:#E6E0F5;
+  --brand:#7B2FF7; --brand-d:#5B1FD6; --brand-soft:#EFE6FF;
+  --ok:#22C55E; --danger:#FF3B5C;
+  --radius:18px;
+  --font:'Noto Kufi Arabic','Geeza Pro','Segoe UI',Tahoma,system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#150F26;--surface:#1F1736;--ink:#F1ECFF;--muted:#A79EC4;--line:#33284F;--brand-soft:#2E2150}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-size:16px;line-height:1.6}
+body{min-height:100vh;min-height:100dvh;padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:3px solid var(--brand);outline-offset:2px;border-radius:10px}
+.wrap{max-width:560px;margin:0 auto;padding:0 16px}
+
+/* hero */
+.hero{background:linear-gradient(135deg,#5B1FD6,#9747FF);color:#fff;
+  padding:calc(18px + env(safe-area-inset-top)) 0 26px;border-radius:0 0 28px 28px;
+  box-shadow:0 10px 30px rgba(91,31,214,.28)}
+.hero .wrap{display:flex;align-items:center;gap:14px}
+.hero-txt{flex:1;min-width:0}
+.hero small{opacity:.85;font-size:.82rem;display:block}
+.hero h1{margin:2px 0 6px;font-size:1.45rem;font-weight:700;line-height:1.3}
+.hero .sub{font-size:.9rem;opacity:.95}
+.ring{width:84px;height:84px;flex:none;position:relative}
+.ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring .bg{stroke:rgba(255,255,255,.25)} .ring .fg{stroke:#fff;transition:stroke-dashoffset .5s}
+.ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:1.15rem;font-weight:700}
+.chip-sync{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:2px 10px;border-radius:99px;
+  background:rgba(255,255,255,.18);font-size:.76rem}
+.chip-sync i{width:8px;height:8px;border-radius:50%;background:#C7BEE0}
+.chip-sync.ok i{background:#4ADE80} .chip-sync.sync i{background:#FACC15} .chip-sync.err i{background:#FF8A9B}
+
+/* date strip */
+.strip{display:flex;gap:8px;overflow-x:auto;padding:16px 16px 6px;margin:0 -16px;scrollbar-width:none;scroll-snap-type:x proximity}
+.strip::-webkit-scrollbar{display:none}
+.day{flex:none;width:54px;padding:8px 0 6px;border-radius:16px;background:var(--surface);border:1.5px solid var(--line);
+  text-align:center;scroll-snap-align:center;position:relative}
+.day span{display:block;font-size:.72rem;color:var(--muted)}
+.day b{display:block;font-size:1.15rem;line-height:1.4}
+.day.today b{color:var(--brand)}
+.day.sel{background:var(--brand);border-color:var(--brand);color:#fff}
+.day.sel span,.day.sel b{color:#fff}
+.day i{position:absolute;bottom:4px;left:50%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:var(--brand)}
+.day.sel i{background:#fff}
+.day-more{flex:none;width:54px;border-radius:16px;border:1.5px dashed var(--line);display:grid;place-items:center;font-size:1.2rem;position:relative}
+.day-more input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+
+/* filters */
+.filters{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.fchip{flex:none;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:99px;background:var(--surface);
+  border:1.5px solid var(--line);font-size:.85rem;min-height:36px}
+.fchip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* sections */
+.sec{margin-top:18px}
+.sec-h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:.95rem;margin:0 2px 8px}
+.sec-h .dot{width:12px;height:12px;border-radius:50%}
+.sec-h em{font-style:normal;color:var(--muted);font-weight:500;font-size:.8rem}
+.task{display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--radius);padding:12px;
+  margin-bottom:10px;border:1px solid var(--line);position:relative;overflow:hidden;cursor:pointer;
+  box-shadow:0 2px 10px rgba(60,30,120,.06)}
+.task::before{content:"";position:absolute;top:0;bottom:0;right:0;width:6px;background:var(--imp)}
+.task .ti{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;font-size:1.35rem;
+  background:color-mix(in srgb,var(--ac) 18%,transparent);margin-right:6px}
+.task .tb{flex:1;min-width:0}
+.task .tt{font-weight:500;overflow-wrap:anywhere}
+.task .tm{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;font-size:.75rem;color:var(--muted)}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:99px;background:var(--bg);white-space:nowrap}
+.tag.time{background:var(--brand-soft);color:var(--brand);font-weight:700}
+.tag.time.due{background:var(--danger);color:#fff}
+.tag.late{background:#FFE3E8;color:#C0213C;font-weight:700}
+@media (prefers-color-scheme:dark){.tag.late{background:#4A1F2B;color:#FF9AAE}}
+.chk{flex:none;width:44px;height:44px;display:grid;place-items:center}
+.chk span{width:28px;height:28px;border-radius:50%;border:2.5px solid var(--ac);display:grid;place-items:center;color:transparent;font-weight:700;transition:.15s}
+.task.done{opacity:.55}
+.task.done .tt{text-decoration:line-through}
+.task.done .chk span{background:var(--ok);border-color:var(--ok);color:#fff}
+.toggle-done{width:100%;padding:10px;border-radius:14px;background:var(--surface);border:1px dashed var(--line);color:var(--muted);margin-top:6px}
+.empty{text-align:center;padding:42px 16px;color:var(--muted)}
+.empty b{display:block;font-size:2.2rem;margin-bottom:6px}
+.date-h{margin:20px 2px 8px;font-weight:700;color:var(--brand)}
+
+/* nav + fab */
+.nav{position:fixed;inset:auto 0 0 0;background:var(--surface);border-top:1px solid var(--line);
+  padding:6px 8px calc(6px + env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:20}
+.nav .in{display:flex;width:100%;max-width:560px}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:0;padding:6px 0;color:var(--muted);font-size:.72rem;min-height:52px}
+.nav button b{font-size:1.3rem;line-height:1.3}
+.nav button.on{color:var(--brand);font-weight:700}
+.fab{position:fixed;left:18px;bottom:calc(76px + env(safe-area-inset-bottom));width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,#7B2FF7,#B05BFF);color:#fff;font-size:2rem;line-height:1;z-index:21;
+  box-shadow:0 10px 24px rgba(123,47,247,.45);display:grid;place-items:center}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(20,10,40,.5);z-index:40;display:none;align-items:flex-end;justify-content:center}
+.scrim.open{display:flex}
+.sheet{background:var(--surface);width:100%;max-width:560px;max-height:92dvh;overflow-y:auto;border-radius:24px 24px 0 0;
+  padding:18px 18px calc(18px + env(safe-area-inset-bottom));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}.ring .fg{transition:none}}
+.sheet h2{margin:0 0 12px;font-size:1.1rem}
+.lbl{display:block;font-size:.8rem;color:var(--muted);margin:14px 0 6px;font-weight:500}
+.inp{width:100%;padding:12px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);min-height:48px}
+textarea.inp{min-height:70px;resize:vertical}
+.err{color:var(--danger);font-size:.8rem;margin-top:4px;min-height:1em}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.seg.c3{grid-template-columns:repeat(3,1fr)} .seg.c2{grid-template-columns:repeat(2,1fr)}
+.opt{padding:10px 4px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);font-size:.8rem;min-height:46px;
+  display:flex;align-items:center;justify-content:center;gap:5px;text-align:center}
+.opt.on{border-color:var(--c,var(--brand));background:color-mix(in srgb,var(--c,var(--brand)) 16%,transparent);font-weight:700}
+.opt .d{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.areas{display:flex;flex-wrap:wrap;gap:8px}
+.area-opt{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:99px;border:1.5px solid var(--line);background:var(--bg);min-height:42px}
+.area-opt.on{border-color:var(--c);background:color-mix(in srgb,var(--c) 16%,transparent);font-weight:700}
+.row{display:flex;gap:10px;align-items:center}
+.switch{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);min-height:48px}
+.sw{width:46px;height:28px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:.15s}
+.sw::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:.15s}
+.sw.on{background:var(--brand)} .sw.on::after{right:21px}
+.hint{font-size:.76rem;color:var(--muted);margin-top:4px}
+.btns{display:flex;gap:10px;margin-top:20px}
+.btn{flex:1;padding:13px;border-radius:14px;font-weight:700;min-height:50px;background:var(--bg);border:1.5px solid var(--line)}
+.btn.pri{background:var(--brand);border-color:var(--brand);color:#fff}
+.sheet .btns{position:sticky;bottom:calc(-18px - env(safe-area-inset-bottom));background:var(--surface);padding:12px 0 calc(8px + env(safe-area-inset-bottom));margin-top:14px;z-index:2}
+.btn.del{flex:none;padding:13px 16px;color:var(--danger);border-color:var(--danger);background:transparent}
+.icons,.colors{display:grid;grid-template-columns:repeat(8,1fr);gap:6px}
+.icons button{aspect-ratio:1;border-radius:12px;border:1.5px solid var(--line);font-size:1.2rem;background:var(--bg)}
+.icons button.on{border-color:var(--brand);background:var(--brand-soft)}
+.colors button{aspect-ratio:1;border-radius:50%;border:3px solid transparent}
+.colors button.on{border-color:var(--ink)}
+
+/* settings */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:16px}
+.card h3{margin:0 0 8px;font-size:1rem}
+.arow{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.arow:last-of-type{border-bottom:0}
+.arow .ti{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--ac) 18%,transparent)}
+.arow span{flex:1}
+.link{color:var(--brand);font-weight:700;padding:8px}
+
+/* banner + toast */
+.banner{position:fixed;top:calc(10px + env(safe-area-inset-top));left:12px;right:12px;max-width:536px;margin:0 auto;z-index:60;display:none;
+  background:var(--ink);color:var(--bg);border-radius:18px;padding:12px 14px;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+.banner.open{display:block}
+.banner .bt{font-weight:700} .banner .bs{opacity:.85;font-size:.85rem}
+.banner .bb{display:flex;gap:8px;margin-top:8px}
+.banner button{padding:7px 14px;border-radius:12px;background:rgba(255,255,255,.16);color:inherit;font-size:.85rem;min-height:38px}
+.banner button.go{background:var(--brand);color:#fff}
+.toast{position:fixed;bottom:calc(150px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  padding:10px 16px;border-radius:99px;font-size:.85rem;z-index:70;display:none;max-width:90%}
+.toast.open{display:block}
+</style>
+</head>
+<body>
+<div id="banner" class="banner" role="alert"></div>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-txt">
+      <small id="h-date"></small>
+      <h1>مهامي</h1>
+      <div class="sub" id="h-sub"></div>
+      <span class="chip-sync" id="h-sync"><i></i><em id="h-sync-t" style="font-style:normal">محلي</em></span>
+    </div>
+    <div class="ring" id="h-ring" aria-hidden="true"></div>
+  </div>
+</header>
+
+<main class="wrap" id="main"></main>
+
+<button class="fab" id="fab" aria-label="مهمة جديدة">+</button>
+<nav class="nav" aria-label="التنقل">
+  <div class="in">
+    <button data-act="tab" data-v="today"><b>🗓️</b>اليوم</button>
+    <button data-act="tab" data-v="upcoming"><b>⏭️</b>القادمة</button>
+    <button data-act="tab" data-v="settings"><b>⚙️</b>الإعدادات</button>
+  </div>
+</nav>
+
+<div class="scrim" id="scrim"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+'use strict';
+/* ============ ثوابت ============ */
+const SB_URL='https://dwsyctxhfbuzpcjilmwq.supabase.co';
+const SB_KEY='sb_publishable_xDrnFMfYxuqI008QnSZ8yA_JoKKMqzg'; // مفتاح عام مخصص للواجهات، والحماية عبر RLS
+const LS='mahami.v1';
+const IMP=[
+  {v:1,name:'عاجل وهام',c:'#FF3B5C'},
+  {v:2,name:'هام',c:'#FF9500'},
+  {v:3,name:'عادي',c:'#2F80FF'},
+  {v:4,name:'عند الفراغ',c:'#8E8E9A'}
+];
+const COLORS=['#7B2FF7','#1E7BFF','#00B8A9','#22C55E','#FFB400','#FF7A1A','#FF3B5C','#FF3DA5','#4F46E5','#64748B'];
+const ICONS=['💼','🌐','🗂️','🏠','📞','✉️','🛒','🔧','💻','📝','📚','🎯','🚗','💡','⭐','🧾'];
+const DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+const DAYS_S=['أحد','اثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'];
+const MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+const DEFAULT_AREAS=[
+  {id:'a-job',name:'الوظيفة',icon:'💼',color:'#1E7BFF',sort:0},
+  {id:'a-site',name:'الموقع',icon:'🌐',color:'#7B2FF7',sort:1},
+  {id:'a-admin',name:'إداري',icon:'🗂️',color:'#FF7A1A',sort:2},
+  {id:'a-me',name:'شخصي',icon:'🏠',color:'#22C55E',sort:3}
+];
+
+/* ============ أدوات ============ */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const safeColor=c=>/^#[0-9a-fA-F]{6}$/.test(c)?c:'#64748B';
+const pad=n=>String(n).padStart(2,'0');
+const ymd=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return ymd(d)};
+const today=()=>ymd(new Date());
+const diffDays=(a,b)=>Math.round((parse(a)-parse(b))/864e5);
+const uid=()=>(crypto.randomUUID?crypto.randomUUID():'id'+Date.now().toString(36)+Math.random().toString(36).slice(2,10));
+const fmtTime=t=>{if(!t)return'';const [h,m]=t.split(':').map(Number);return `${h%12===0?12:h%12}:${pad(m)} ${h<12?'ص':'م'}`};
+const nowHM=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())};
+const longDate=s=>{const d=parse(s);return `${DAYS[d.getDay()]} ${d.getDate()} ${MONTHS[d.getMonth()]}`};
+let toastT;
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('open');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('open'),2400)}
+
+/* ============ الحالة والتخزين ============ */
+function load(){
+  try{
+    const s=JSON.parse(localStorage.getItem(LS)||'null');
+    if(s&&Array.isArray(s.tasks)&&Array.isArray(s.areas)){s.dirty=s.dirty||{a:{},t:{}};return s}
+  }catch(e){}
+  return {owner:null,areas:DEFAULT_AREAS.map(a=>({...a,del:false,ts:0})),tasks:[],dirty:{a:{},t:{}},lastArea:'a-job'};
+}
+let S=load();
+function save(){try{localStorage.setItem(LS,JSON.stringify(S))}catch(e){}}
+const V={tab:'today',date:today(),base:today(),filter:null,showDone:false};
+const areaOf=id=>S.areas.find(a=>a.id===id&&!a.del)||{id:null,name:'غير مصنّف',icon:'📌',color:'#64748B'};
+const liveAreas=()=>S.areas.filter(a=>!a.del).sort((a,b)=>a.sort-b.sort);
+
+/* ============ منطق التكرار والترتيب ============ */
+const isRep=t=>t.repeat&&t.repeat.type&&t.repeat.type!=='none';
+function occursOn(t,d){
+  if(t.del)return false;
+  if(!isRep(t))return t.date===d;
+  if(d<t.date)return false;
+  const r=t.repeat,dt=parse(d);
+  if(r.type==='daily')return true;
+  if(r.type==='weekly')return (r.days&&r.days.length?r.days:[parse(t.date).getDay()]).includes(dt.getDay());
+  if(r.type==='monthly')return dt.getDate()===parse(t.date).getDate();
+  return false;
+}
+const isDone=(t,d)=>isRep(t)?(t.doneDates||[]).includes(d):!!t.done;
+function itemsFor(d){
+  const out=[];
+  const td=today();
+  for(const t of S.tasks){
+    if(t.del)continue;
+    if(occursOn(t,d))out.push({t,d,late:0});
+    else if(d===td&&!isRep(t)&&!t.done&&t.date<td)out.push({t,d:t.date,late:diffDays(td,t.date)});
+  }
+  return out;
+}
+function sortItems(a,b){
+  if(a.t.imp!==b.t.imp)return a.t.imp-b.t.imp;
+  if(!!a.late!==!!b.late)return a.late?-1:1;
+  const ta=a.t.time||'',tb=b.t.time||'';
+  if(!!ta!==!!tb)return ta?-1:1;
+  if(ta!==tb)return ta<tb?-1:1;
+  return (a.t.cts||0)-(b.t.cts||0);
+}
+
+/* ============ العرض ============ */
+function taskCard(it){
+  const {t,d,late}=it,a=areaOf(t.areaId),imp=IMP.find(i=>i.v===t.imp)||IMP[2];
+  const done=isDone(t,d);
+  const isToday=(d===today()||late)&&!done;
+  const due=t.time&&!late&&d===today()&&!done&&t.time<=nowHM();
+  const tags=[];
+  if(late)tags.push(`<span class="tag late">متأخرة ${late===1?'منذ يوم':late===2?'منذ يومين':'منذ '+late+' أيام'}</span>`);
+  if(t.time&&!late)tags.push(`<span class="tag time${due?' due':''}">⏰ ${fmtTime(t.time)}</span>`);
+  tags.push(`<span class="tag">${esc(a.name)}</span>`);
+  if(isRep(t))tags.push(`<span class="tag">🔁 ${t.repeat.type==='daily'?'يومي':t.repeat.type==='weekly'?'أسبوعي':'شهري'}</span>`);
+  return `<div class="task${done?' done':''}" data-act="edit" data-id="${esc(t.id)}" style="--ac:${safeColor(a.color)};--imp:${imp.c}">
+    <div class="ti">${esc(a.icon)}</div>
+    <div class="tb"><div class="tt">${esc(t.title)}</div><div class="tm">${tags.join('')}</div></div>
+    <button class="chk" data-act="toggle" data-id="${esc(t.id)}" data-d="${d}" aria-label="${done?'إلغاء الإنجاز':'تم الإنجاز'}"><span>✓</span></button>
+  </div>`;
+}
+function groupHTML(items,showDone){
+  if(!items.length)return '';
+  const open=items.filter(i=>!isDone(i.t,i.d)).sort(sortItems);
+  const done=items.filter(i=>isDone(i.t,i.d)).sort(sortItems);
+  let h='';
+  for(const imp of IMP){
+    const g=open.filter(i=>i.t.imp===imp.v);
+    if(!g.length)continue;
+    h+=`<section class="sec"><div class="sec-h"><span class="dot" style="background:${imp.c}"></span>${imp.name}<em>${g.length}</em></div>${g.map(taskCard).join('')}</section>`;
+  }
+  if(done.length){
+    h+=`<section class="sec"><button class="toggle-done" data-act="showdone">${showDone?'إخفاء':'عرض'} المنجزة (${done.length})</button>${showDone?'<div style="margin-top:10px">'+done.map(taskCard).join('')+'</div>':''}</section>`;
+  }
+  return h;
+}
+function viewToday(){
+  const td=today();
+  let items=itemsFor(V.date);
+  const total=items.length;
+  if(V.filter)items=items.filter(i=>i.t.areaId===V.filter);
+  // الشريط
+  let strip='';
+  for(let i=-3;i<=10;i++){
+    const d=addDays(V.base,i),dt=parse(d);
+    const has=S.tasks.some(t=>occursOn(t,d));
+    strip+=`<button class="day${d===V.date?' sel':''}${d===td?' today':''}" data-act="pick" data-d="${d}" aria-label="${longDate(d)}"><span>${DAYS_S[dt.getDay()]}</span><b>${dt.getDate()}</b>${has?'<i></i>':''}</button>`;
+  }
+  strip+=`<label class="day-more" aria-label="اختيار تاريخ">📅<input type="date" data-act="datepick" value="${V.date}"></label>`;
+  const areas=liveAreas();
+  const filters=areas.length?`<div class="filters"><button class="fchip${!V.filter?' on':''}" data-act="filter" data-v="">الكل</button>${areas.map(a=>`<button class="fchip${V.filter===a.id?' on':''}" data-act="filter" data-v="${esc(a.id)}">${esc(a.icon)} ${esc(a.name)}</button>`).join('')}</div>`:'';
+  const body=items.length?groupHTML(items,V.showDone):
+    `<div class="empty"><b>${total?'🔍':'🌿'}</b>${total?'لا مهام في هذا المجال لهذا اليوم':'لا مهام في هذا اليوم. اضغط + لإضافة مهمة'}</div>`;
+  return `<div class="strip" id="strip">${strip}</div>${filters}${body}`;
+}
+function viewUpcoming(){
+  const td=today();let h='',n=0;
+  for(let i=1;i<=14;i++){
+    const d=addDays(td,i);
+    const items=itemsFor(d).filter(it=>!isDone(it.t,it.d));
+    if(!items.length)continue;
+    n+=items.length;
+    h+=`<div class="date-h">${i===1?'غداً · ':''}${longDate(d)}</div>`+items.sort(sortItems).map(taskCard).join('');
+  }
+  return h||`<div class="empty"><b>🌤️</b>لا مهام مجدولة خلال الأسبوعين القادمين</div>`;
+}
+function viewSettings(){
+  const areas=liveAreas();
+  let acct;
+  if(session){
+    acct=`<p>مسجّل بالبريد: <b dir="ltr">${esc(session.user.email||'')}</b></p>
+      <label class="lbl" for="np">تغيير كلمة المرور</label>
+      <input class="inp" id="np" type="password" autocomplete="new-password" placeholder="كلمة مرور جديدة (6 أحرف على الأقل)" dir="ltr">
+      <div class="btns"><button class="btn pri" data-act="chgpw">حفظ كلمة المرور</button><button class="btn" data-act="logout">تسجيل الخروج</button></div>`;
+  }else if(!sb){
+    acct=`<p class="hint">تعذّر تحميل خدمة المزامنة. المهام تُحفظ على هذا الجهاز فقط، وتعمل المزامنة عند توفر الاتصال.</p>`;
+  }else{
+    acct=`<p class="hint">سجّل بنفس البريد على كل جهاز لتظهر مهامك في كل مكان. بدون تسجيل تُحفظ المهام على هذا الجهاز فقط.</p>
+      <label class="lbl" for="em">البريد الإلكتروني</label>
+      <input class="inp" id="em" type="email" autocomplete="email" dir="ltr">
+      <label class="lbl" for="pw">كلمة المرور</label>
+      <input class="inp" id="pw" type="password" autocomplete="current-password" dir="ltr">
+      <div class="err" id="auth-err"></div>
+      <div class="btns"><button class="btn pri" data-act="login">دخول</button><button class="btn" data-act="signup">حساب جديد</button></div>
+      <button class="link" data-act="forgot">نسيت كلمة المرور؟</button>`;
+  }
+  return `<div class="card"><h3>المزامنة بين الأجهزة</h3>${acct}</div>
+    <div class="card"><h3>المجالات</h3>
+      ${areas.map(a=>`<div class="arow" style="--ac:${safeColor(a.color)}"><div class="ti">${esc(a.icon)}</div><span>${esc(a.name)}</span><button class="link" data-act="area-edit" data-id="${esc(a.id)}">تعديل</button></div>`).join('')||'<p class="hint">لا توجد مجالات</p>'}
+      <div class="btns"><button class="btn pri" data-act="area-new">+ مجال جديد</button></div>
+    </div>`;
+}
+function renderRing(){
+  const items=itemsFor(today()),total=items.length,done=items.filter(i=>isDone(i.t,i.d)).length;
+  const C=2*Math.PI*34,off=total?C*(1-done/total):C;
+  $('h-ring').innerHTML=`<svg viewBox="0 0 84 84"><circle class="bg" cx="42" cy="42" r="34" fill="none" stroke-width="9"/><circle class="fg" cx="42" cy="42" r="34" fill="none" stroke-width="9" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${off}"/></svg><b>${done}/${total}</b>`;
+  const left=total-done;
+  $('h-sub').textContent=total?(left?`متبقي ${left} من ${total} مهام اليوم`:'أنجزت كل مهام اليوم 🎉'):'يوم خالٍ من المهام';
+  $('h-date').textContent=longDate(today());
+}
+function renderSync(){
+  const m={local:['','محلي على هذا الجهاز'],sync:['sync','جارٍ المزامنة…'],ok:['ok','متزامن'],err:['err','غير متصل، ستتم المزامنة لاحقاً']}[syncState];
+  const el=$('h-sync');el.className='chip-sync '+m[0];$('h-sync-t').textContent=m[1];
+}
+function render(soft){
+  if(soft&&V.tab==='settings'&&/INPUT|TEXTAREA/.test((document.activeElement||{}).tagName||'')){renderRing();renderSync();return}
+  const m=$('main');
+  m.innerHTML=V.tab==='today'?viewToday():V.tab==='upcoming'?viewUpcoming():viewSettings();
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on',b.dataset.v===V.tab));
+  $('fab').style.display=V.tab==='settings'?'none':'grid';
+  renderRing();renderSync();updateBadge();
+  if(V.tab==='today'){const sel=document.querySelector('#strip .sel');if(sel&&sel.scrollIntoView)sel.scrollIntoView({inline:'center',block:'nearest'})}
+}
+
+/* ============ تعديل البيانات ============ */
+function putTask(t){
+  t.ts=Date.now();
+  const i=S.tasks.findIndex(x=>x.id===t.id);
+  if(i>=0)S.tasks[i]=t;else S.tasks.push(t);
+  S.dirty.t[t.id]=1;save();render();push();
+}
+function putArea(a){
+  a.ts=Date.now();
+  const i=S.areas.findIndex(x=>x.id===a.id);
+  if(i>=0)S.areas[i]=a;else S.areas.push(a);
+  S.dirty.a[a.id]=1;save();render();push();
+}
+function toggleDone(id,d){
+  const t=S.tasks.find(x=>x.id===id);if(!t)return;
+  const c={...t};
+  if(isRep(c)){
+    const set=new Set(c.doneDates||[]);
+    set.has(d)?set.delete(d):set.add(d);
+    c.doneDates=[...set].sort().slice(-400);
+  }else c.done=!c.done;
+  putTask(c);
+}
+
+/* ============ نافذة المهمة ============ */
+let E=null;
+function openSheet(html){const s=$('sheet');s.innerHTML=html;$('scrim').classList.add('open');}
+function closeSheet(){$('scrim').classList.remove('open');$('sheet').innerHTML='';E=null}
+function taskSheet(id){
+  const t=id&&S.tasks.find(x=>x.id===id);
+  E=t?{...t,repeat:{type:'none',days:[],...(t.repeat||{})}}:
+    {id:null,title:'',note:'',areaId:(areaOf(S.lastArea).id||(liveAreas()[0]||{}).id||null),imp:2,time:null,date:V.date<today()?today():V.date,repeat:{type:'none',days:[]},done:false,doneDates:[]};
+  drawTaskSheet();
+}
+function drawTaskSheet(){
+  const areas=liveAreas();
+  const rep=E.repeat;
+  openSheet(`
+    <h2>${E.id?'تعديل المهمة':'مهمة جديدة'}</h2>
+    <label class="lbl" for="f-title">عنوان المهمة</label>
+    <input class="inp" id="f-title" maxlength="200" value="${esc(E.title)}" autocomplete="off">
+    <div class="err" id="f-err"></div>
+
+    <span class="lbl">المجال</span>
+    <div class="areas">${areas.map(a=>`<button class="area-opt${E.areaId===a.id?' on':''}" style="--c:${safeColor(a.color)}" data-act="sh-area" data-v="${esc(a.id)}">${esc(a.icon)} ${esc(a.name)}</button>`).join('')}</div>
+
+    <span class="lbl">الأهمية (الأهم يظهر أولاً)</span>
+    <div class="seg">${IMP.map(i=>`<button class="opt${E.imp===i.v?' on':''}" style="--c:${i.c}" data-act="sh-imp" data-v="${i.v}"><span class="d"></span>${i.name}</button>`).join('')}</div>
+
+    <span class="lbl">وقت البداية</span>
+    <div class="switch" data-act="sh-time"><span>${E.time?'يبدأ في':'بدون وقت'}</span>
+      <span class="row">${E.time?`<input class="inp" id="f-time" type="time" value="${esc(E.time)}" style="width:auto;min-height:40px;padding:6px 10px" data-stop="1">`:''}<span class="sw${E.time?' on':''}"></span></span></div>
+    <div class="hint">وقت بداية فقط، دون مدة أو وقت نهاية. المهام ذات الوقت تتقدم على غيرها داخل نفس الأهمية.</div>
+
+    <label class="lbl" for="f-date">التاريخ</label>
+    <input class="inp" id="f-date" type="date" value="${esc(E.date)}">
+
+    <span class="lbl">التكرار</span>
+    <div class="seg">${[['none','لا يتكرر'],['daily','يومياً'],['weekly','أسبوعياً'],['monthly','شهرياً']].map(([v,n])=>`<button class="opt${rep.type===v?' on':''}" data-act="sh-rep" data-v="${v}">${n}</button>`).join('')}</div>
+    ${rep.type==='weekly'?`<div class="seg" style="grid-template-columns:repeat(7,1fr);margin-top:8px">${DAYS_S.map((n,i)=>`<button class="opt${(rep.days||[]).includes(i)?' on':''}" data-act="sh-day" data-v="${i}" style="font-size:.7rem;padding:8px 0">${n}</button>`).join('')}</div><div class="hint">إن لم تختر أياماً يتكرر في نفس يوم الأسبوع للتاريخ أعلاه.</div>`:''}
+
+    <label class="lbl" for="f-note">ملاحظة (اختياري)</label>
+    <textarea class="inp" id="f-note" maxlength="1000">${esc(E.note)}</textarea>
+
+    <div class="btns">
+      ${E.id?'<button class="btn del" data-act="sh-del">حذف</button>':''}
+      <button class="btn" data-act="sh-cancel">إلغاء</button>
+      <button class="btn pri" data-act="sh-save">حفظ</button>
+    </div>`);
+  setTimeout(()=>{if(E&&!E.id){const i=$('f-title');i&&i.focus()}},50);
+}
+function syncE(){
+  if(!E)return;
+  const g=id=>$(id);
+  if(g('f-title'))E.title=g('f-title').value;
+  if(g('f-note'))E.note=g('f-note').value;
+  if(g('f-date')&&g('f-date').value)E.date=g('f-date').value;
+  if(g('f-time')&&g('f-time').value)E.time=g('f-time').value;
+}
+function saveTask(){
+  syncE();
+  const title=E.title.trim();
+  if(!title){$('f-err').textContent='اكتب عنوان المهمة';$('f-title').focus();return}
+  const t={
+    id:E.id||uid(),title,note:E.note.trim(),areaId:E.areaId,imp:E.imp,
+    time:E.time||null,date:E.date,repeat:E.repeat.type==='none'?{type:'none'}:E.repeat,
+    done:!!E.done,doneDates:E.doneDates||[],del:false,cts:E.cts||Date.now()
+  };
+  if(t.areaId)S.lastArea=t.areaId;
+  const adding=!E.id;
+  putTask(t);closeSheet();
+  if(adding&&!occursOn(t,V.date)&&V.tab==='today')toast('أُضيفت المهمة إلى '+longDate(t.date));
+}
+
+/* ============ نافذة المجال ============ */
+let AE=null;
+function areaSheet(id){
+  const a=id&&S.areas.find(x=>x.id===id);
+  AE=a?{...a}:{id:null,name:'',icon:ICONS[0],color:COLORS[0],sort:S.areas.length,del:false};
+  drawAreaSheet();
+}
+function drawAreaSheet(){
+  openSheet(`
+    <h2>${AE.id?'تعديل المجال':'مجال جديد'}</h2>
+    <label class="lbl" for="a-name">اسم المجال</label>
+    <input class="inp" id="a-name" maxlength="30" value="${esc(AE.name)}" autocomplete="off">
+    <div class="err" id="a-err"></div>
+    <span class="lbl">الأيقونة</span>
+    <div class="icons">${ICONS.map(i=>`<button class="${AE.icon===i?'on':''}" data-act="ar-icon" data-v="${i}">${i}</button>`).join('')}</div>
+    <span class="lbl">اللون</span>
+    <div class="colors">${COLORS.map(c=>`<button class="${AE.color===c?'on':''}" style="background:${c}" data-act="ar-color" data-v="${c}" aria-label="${c}"></button>`).join('')}</div>
+    <div class="btns">
+      ${AE.id?'<button class="btn del" data-act="ar-del">حذف</button>':''}
+      <button class="btn" data-act="sh-cancel">إلغاء</button>
+      <button class="btn pri" data-act="ar-save">حفظ</button>
+    </div>`);
+}
+function saveArea(){
+  const n=$('a-name').value.trim();AE.name=n;
+  if(!n){$('a-err').textContent='اكتب اسم المجال';return}
+  putArea({...AE,id:AE.id||uid()});closeSheet();
+}
+function confirmSheet(msg,ok,fn){
+  openSheet(`<h2>${esc(msg)}</h2><div class="btns"><button class="btn" data-act="sh-cancel">إلغاء</button><button class="btn pri" id="cf-ok" style="background:var(--danger);border-color:var(--danger)">${esc(ok)}</button></div>`);
+  $('cf-ok').onclick=()=>{closeSheet();fn()};
+}
+
+/* ============ التنبيه داخل التطبيق ============ */
+const notified=new Set();
+function dueItems(){
+  const td=today(),hm=nowHM();
+  return itemsFor(td).filter(i=>!i.late&&i.t.time&&i.t.time<=hm&&!isDone(i.t,i.d));
+}
+function updateBadge(){
+  const n=dueItems().length;
+  document.title=(n?`(${n}) `:'')+'مهامي';
+  if('setAppBadge' in navigator){try{n?navigator.setAppBadge(n):navigator.clearAppBadge()}catch(e){}}
+}
+function checkReminders(){
+  const hm=nowHM(),td=today();
+  const [h,m]=hm.split(':').map(Number),nowMin=h*60+m;
+  for(const it of itemsFor(td)){
+    if(it.late||!it.t.time||isDone(it.t,it.d))continue;
+    const [th,tm]=it.t.time.split(':').map(Number),diff=nowMin-(th*60+tm);
+    const key=it.t.id+'|'+td;
+    if(diff>=0&&diff<=15&&!notified.has(key)){
+      notified.add(key);
+      const b=$('banner');
+      b.innerHTML=`<div class="bt">⏰ حان وقت بداية مهمة</div><div class="bs">${esc(it.t.title)} · ${fmtTime(it.t.time)}</div>
+        <div class="bb"><button class="go" data-act="bn-done" data-id="${esc(it.t.id)}" data-d="${it.d}">تم</button><button data-act="bn-close">إغلاق</button></div>`;
+      b.classList.add('open');
+      if(navigator.vibrate)try{navigator.vibrate(120)}catch(e){}
+      break;
+    }
+  }
+  render(true);
+}
+
+/* ============ المزامنة (Supabase) ============ */
+let sb=null,session=null,syncState='local',pushing=false,channel=null;
+const taskToRow=t=>({id:t.id,date:t.date,title:t.title,note:t.note||'',area_id:t.areaId||null,importance:t.imp,
+  start_time:t.time||null,done:!!t.done,repeat:t.repeat||{type:'none'},done_dates:t.doneDates||[],deleted:!!t.del,cts:t.cts||0,ts:t.ts||0});
+const rowToTask=r=>({id:r.id,date:r.date,title:r.title,note:r.note||'',areaId:r.area_id,imp:r.importance,time:r.start_time,
+  done:!!r.done,repeat:r.repeat||{type:'none'},doneDates:r.done_dates||[],del:!!r.deleted,cts:Number(r.cts)||0,ts:Number(r.ts)||0});
+const areaToRow=a=>({id:a.id,name:a.name,icon:a.icon,color:a.color,sort:a.sort||0,deleted:!!a.del,ts:a.ts||0});
+const rowToArea=r=>({id:r.id,name:r.name,icon:r.icon,color:r.color,sort:r.sort||0,del:!!r.deleted,ts:Number(r.ts)||0});
+function setSync(s){syncState=s;renderSync()}
+
+function mergeRemote(kind,remote){ // kind: 'a' | 't'
+  const list=kind==='a'?S.areas:S.tasks,conv=kind==='a'?rowToArea:rowToTask;
+  const r=conv(remote),i=list.findIndex(x=>x.id===r.id);
+  if(i<0){list.push(r);return true}
+  if(r.ts>list[i].ts){list[i]=r;delete S.dirty[kind][r.id];return true}
+  if(r.ts<list[i].ts)S.dirty[kind][r.id]=1;
+  return false;
+}
+async function pull(){
+  const [a,t]=await Promise.all([sb.from('mahami_areas').select('*'),sb.from('mahami_tasks').select('*')]);
+  if(a.error)throw a.error;if(t.error)throw t.error;
+  const ra=new Set(a.data.map(r=>r.id)),rt=new Set(t.data.map(r=>r.id));
+  a.data.forEach(r=>mergeRemote('a',r));t.data.forEach(r=>mergeRemote('t',r));
+  S.areas.forEach(x=>{if(!ra.has(x.id))S.dirty.a[x.id]=1});
+  S.tasks.forEach(x=>{if(!rt.has(x.id))S.dirty.t[x.id]=1});
+  save();
+}
+async function push(){
+  if(!sb||!session||pushing)return;
+  const da=S.areas.filter(x=>S.dirty.a[x.id]),dt=S.tasks.filter(x=>S.dirty.t[x.id]);
+  if(!da.length&&!dt.length)return;
+  pushing=true;setSync('sync');
+  try{
+    if(da.length){const {error}=await sb.from('mahami_areas').upsert(da.map(areaToRow),{onConflict:'id'});if(error)throw error;
+      da.forEach(x=>{const c=S.areas.find(y=>y.id===x.id);if(c&&c.ts===x.ts)delete S.dirty.a[x.id]})}
+    for(let i=0;i<dt.length;i+=200){
+      const part=dt.slice(i,i+200);
+      const {error}=await sb.from('mahami_tasks').upsert(part.map(taskToRow),{onConflict:'id'});if(error)throw error;
+      part.forEach(x=>{const c=S.tasks.find(y=>y.id===x.id);if(c&&c.ts===x.ts)delete S.dirty.t[x.id]});
+    }
+    save();setSync('ok');
+  }catch(e){console.warn('push',e);setSync('err')}
+  finally{pushing=false}
+  if(S.areas.some(x=>S.dirty.a[x.id])||S.tasks.some(x=>S.dirty.t[x.id])){/* تغييرات جديدة أثناء الإرسال */ if(syncState==='ok')setTimeout(push,300)}
+}
+async function startSync(){
+  if(!sb||!session)return;
+  if(S.owner&&S.owner!==session.user.id){ // حساب مختلف على نفس الجهاز: لا نخلط البيانات
+    S={owner:null,areas:DEFAULT_AREAS.map(a=>({...a,del:false,ts:0})),tasks:[],dirty:{a:{},t:{}},lastArea:'a-job'};
+  }
+  S.owner=session.user.id;save();
+  setSync('sync');
+  try{await pull();render();await push();if(syncState!=='err')setSync('ok');subscribe()}
+  catch(e){console.warn('sync',e);setSync('err')}
+}
+function subscribe(){
+  if(channel){try{sb.removeChannel(channel)}catch(e){}channel=null}
+  channel=sb.channel('mahami-live')
+    .on('postgres_changes',{event:'*',schema:'public',table:'mahami_tasks'},p=>{if(p.new&&p.new.id&&mergeRemote('t',p.new)){save();render(true)}})
+    .on('postgres_changes',{event:'*',schema:'public',table:'mahami_areas'},p=>{if(p.new&&p.new.id&&mergeRemote('a',p.new)){save();render(true)}})
+    .subscribe();
+}
+function initSB(){
+  if(!window.supabase){setSync('local');return}
+  try{
+    sb=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  }catch(e){console.warn(e);sb=null;return}
+  sb.auth.onAuthStateChange((ev,s)=>{
+    session=s;
+    if(ev==='PASSWORD_RECOVERY'){V.tab='settings';toast('اكتب كلمة المرور الجديدة ثم احفظها')}
+    if(s)setTimeout(startSync,0);
+    else{if(channel){try{sb.removeChannel(channel)}catch(e){}channel=null}setSync('local')}
+    render();
+  });
+}
+async function authDo(kind){
+  const email=($('em')||{}).value,pw=($('pw')||{}).value,er=$('auth-err');
+  if(!email||!pw){er.textContent='اكتب البريد وكلمة المرور';return}
+  er.textContent='';
+  try{
+    const r=kind==='login'?await sb.auth.signInWithPassword({email:email.trim(),password:pw}):await sb.auth.signUp({email:email.trim(),password:pw});
+    if(r.error){er.textContent=r.error.message==='Invalid login credentials'?'البريد أو كلمة المرور غير صحيحة':r.error.message;return}
+    if(kind==='signup'&&!r.data.session)toast('تحقق من بريدك لتأكيد الحساب ثم سجّل الدخول');
+  }catch(e){er.textContent='تعذّر الاتصال. تحقق من الإنترنت'}
+}
+
+/* ============ الأحداث ============ */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-act]');
+  if(!el){if(e.target.id==='scrim')closeSheet();return}
+  if(e.target.closest('[data-stop]'))return;
+  const a=el.dataset.act,v=el.dataset.v;
+  switch(a){
+    case 'tab':V.tab=v;render();window.scrollTo(0,0);break;
+    case 'pick':V.date=el.dataset.d;V.showDone=false;render();break;
+    case 'filter':V.filter=v||null;render();break;
+    case 'showdone':V.showDone=!V.showDone;render();break;
+    case 'toggle':e.stopPropagation();toggleDone(el.dataset.id,el.dataset.d);break;
+    case 'edit':if(!e.target.closest('.chk'))taskSheet(el.dataset.id);break;
+    case 'sh-area':syncE();E.areaId=v;drawTaskSheet();break;
+    case 'sh-imp':syncE();E.imp=+v;drawTaskSheet();break;
+    case 'sh-time':syncE();E.time=E.time?null:'09:00';drawTaskSheet();break;
+    case 'sh-rep':syncE();E.repeat={type:v,days:E.repeat.days||[]};drawTaskSheet();break;
+    case 'sh-day':{syncE();const s=new Set(E.repeat.days||[]);s.has(+v)?s.delete(+v):s.add(+v);E.repeat.days=[...s].sort();drawTaskSheet();break}
+    case 'sh-save':saveTask();break;
+    case 'sh-cancel':closeSheet();break;
+    case 'sh-del':{const id=E.id;confirmSheet('حذف هذه المهمة نهائياً؟','حذف',()=>{const t=S.tasks.find(x=>x.id===id);if(t)putTask({...t,del:true})});break}
+    case 'area-new':areaSheet(null);break;
+    case 'area-edit':areaSheet(el.dataset.id);break;
+    case 'ar-icon':AE.name=$('a-name').value;AE.icon=v;drawAreaSheet();break;
+    case 'ar-color':AE.name=$('a-name').value;AE.color=v;drawAreaSheet();break;
+    case 'ar-save':saveArea();break;
+    case 'ar-del':{const id=AE.id;confirmSheet('حذف هذا المجال؟ ستبقى مهامه دون مجال.','حذف',()=>{const x=S.areas.find(y=>y.id===id);if(x)putArea({...x,del:true})});break}
+    case 'login':authDo('login');break;
+    case 'signup':authDo('signup');break;
+    case 'forgot':{const em=($('em')||{}).value;if(!em){$('auth-err').textContent='اكتب بريدك أولاً';break}
+      sb.auth.resetPasswordForEmail(em.trim(),{redirectTo:location.href.split('#')[0]}).then(r=>toast(r.error?'تعذّر الإرسال':'أُرسل رابط الاستعادة إلى بريدك'));break}
+    case 'chgpw':{const p=$('np').value;if(p.length<6){toast('كلمة المرور 6 أحرف على الأقل');break}
+      sb.auth.updateUser({password:p}).then(r=>{toast(r.error?'تعذّر التغيير':'تم تغيير كلمة المرور');if(!r.error)$('np').value=''});break}
+    case 'logout':sb.auth.signOut();break;
+    case 'bn-done':toggleDone(el.dataset.id,el.dataset.d);$('banner').classList.remove('open');break;
+    case 'bn-close':$('banner').classList.remove('open');break;
+  }
+});
+document.addEventListener('change',e=>{
+  if(e.target.dataset&&e.target.dataset.act==='datepick'&&e.target.value){V.date=e.target.value;V.base=V.date;render()}
+});
+$('fab').addEventListener('click',()=>taskSheet(null));
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeSheet();
+  if(e.key==='Enter'&&E&&e.target.id==='f-title'){e.preventDefault();saveTask()}
+});
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState==='visible'){render(true);if(sb&&session){pull().then(()=>{save();render(true);push()}).catch(()=>setSync('err'))}}
+});
+window.addEventListener('online',()=>{if(session)push()});
+window.addEventListener('offline',()=>{if(session)setSync('err')});
+
+/* ============ بدء التشغيل ============ */
+render();
+initSB();
+checkReminders();
+setInterval(checkReminders,20000);
+setInterval(()=>{if(session)push()},60000);
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
