@@ -1,0 +1,18 @@
+{
+  "name": "مهامي",
+  "short_name": "مهامي",
+  "description": "مهامي اليومية مرتبة بالأهمية مع وقت بداية اختياري ومزامنة بين الأجهزة",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F5F1FF",
+  "theme_color": "#7C3AED",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
