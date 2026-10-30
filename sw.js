@@ -1,4 +1,4 @@
-const CACHE = 'mahami-v3';
+const CACHE = 'mahami-v4';
 const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', (e) => {
