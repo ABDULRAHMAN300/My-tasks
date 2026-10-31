@@ -14,11 +14,13 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
 <script>try{var __t=localStorage.getItem("mahami.theme");if(__t==="dark"||__t==="light")document.documentElement.setAttribute("data-theme",__t)}catch(e){}</script>
 <style>
+/* الخط مضمّن داخل التطبيق: يعمل دون إنترنت ولا يعتمد على Google Fonts */
+@font-face{font-family:"Cairo";font-weight:400;font-display:swap;src:url(fonts/cairo-arabic-400.woff2) format("woff2");unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:"Cairo";font-weight:400;font-display:swap;src:url(fonts/cairo-latin-400.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Cairo";font-weight:700;font-display:swap;src:url(fonts/cairo-arabic-700.woff2) format("woff2");unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0897-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC}
+@font-face{font-family:"Cairo";font-weight:700;font-display:swap;src:url(fonts/cairo-latin-700.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 /* ألوان: لون مميز واحد (بنفسجي) + ألوان حالة للأهمية فقط. خطّان: 400 و700. مسافات على شبكة 8px */
 :root{
   --bg:#F6F5F8; --surface:#FFFFFF; --ink:#1C1A22; --muted:#5E5A68; --line:#E4E2EA;
@@ -64,6 +66,25 @@ button{cursor:pointer;border:0;background:none;touch-action:manipulation}
 .chip-sync i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.55)}
 .chip-sync.ok i{background:#4ADE80} .chip-sync.sync i{background:#FACC15} .chip-sync.err i{background:#FDA4AF}
 
+/* شريط مصغّر يظهر عند التمرير */
+.minibar{position:fixed;top:0;left:0;right:0;z-index:30;background:var(--hdr);color:#fff;padding-top:env(safe-area-inset-top);transform:translateY(-100%);transition:transform .2s ease;pointer-events:none}
+.minibar.on{transform:none;pointer-events:auto}
+.minibar .wrap{display:flex;align-items:center;gap:12px;min-height:48px;font-size:.88rem}
+.minibar span{opacity:.85}
+.minibar .mb-p{margin-inline-start:auto;font-weight:700;opacity:1;font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){.minibar{transition:none}}
+/* السحب على المهمة */
+.swrap{position:relative;margin-bottom:8px;border-radius:var(--radius);overflow:hidden}
+.swrap .task{margin-bottom:0;touch-action:pan-y}
+.swrap.drag .task{transition:none}
+.swrap .task{transition:transform .2s ease}
+.sbg{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-weight:700;font-size:.9rem;opacity:0}
+.swrap.drag .sbg,.swrap.go .sbg{opacity:1}
+.sbg span{display:inline-flex;align-items:center;gap:8px;opacity:0}
+.swrap.l .sbg{background:var(--ok);color:#fff}.swrap.l .sb-done{opacity:1}
+.swrap.r .sbg{background:var(--brand);color:var(--on-brand)}.swrap.r .sb-pp{opacity:1}
+:root[data-theme="dark"] .swrap.l .sbg{color:#0B1F12}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .swrap.l .sbg{color:#0B1F12}}
 /* شريط الأيام */
 .strip{display:flex;gap:8px;overflow-x:auto;padding:16px 16px 8px;margin:0 -16px;scrollbar-width:none;scroll-snap-type:x proximity}
 .strip::-webkit-scrollbar{display:none}
@@ -235,6 +256,7 @@ button:active{transform:scale(.97)}
 </head>
 <body>
 <div id="banner" class="banner" role="alert"></div>
+<div class="minibar" id="minibar" aria-hidden="true"><div class="wrap"><b>مهامي</b><span id="mb-d"></span><span class="mb-p" id="mb-p"></span></div></div>
 
 <header class="hero">
   <div class="wrap">
@@ -264,7 +286,7 @@ button:active{transform:scale(.97)}
 <div class="scrim" id="scrim"><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
 <div class="toast" id="toast" role="status"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="vendor/supabase.js"></script>
 <script>
 'use strict';
 /* ============ ثوابت ============ */
@@ -369,6 +391,13 @@ function sortItems(a,b){
 }
 
 /* ============ العرض ============ */
+function repLabel(t){
+  const r=t.repeat||{};
+  if(r.type==='daily')return 'يوميًا';
+  if(r.type==='weekly'){const ds=(r.days&&r.days.length?r.days:[parse(t.date).getDay()]).slice().sort();return ds.length===7?'يوميًا':'كل '+ds.map(i=>DAYS_S[i]).join('، ')}
+  if(r.type==='monthly')return 'شهريًا يوم '+parse(t.date).getDate();
+  return '';
+}
 function taskCard(it){
   const {t,d,late}=it,a=areaOf(t.areaId),imp=IMP.find(i=>i.v===impOf(t))||IMP[2];
   const done=isDone(t,d);
@@ -381,13 +410,14 @@ function taskCard(it){
   tags.push(`<span class="m">${esc(a.name)}</span>`);
   const subs=t.subs||[];if(subs.length)tags.push(`<span class="m" aria-label="الخطوات">${ic('list-checks','xs')}<bdi>${subs.filter(x=>x.d).length}/${subs.length}</bdi></span>`);
   if(t.note)tags.push(`<span class="m" aria-label="فيها ملاحظة">${ic('sticky-note','xs')}</span>`);
-  if(isRep(t))tags.push(`<span class="m">${ic('repeat','xs')}${t.repeat.type==='daily'?'يومي':t.repeat.type==='weekly'?'أسبوعي':'شهري'}</span>`);
-  return `<div class="task${done?' done':''}" data-act="edit" data-id="${esc(t.id)}" style="--ac:${safeColor(a.color)};${impStyle(imp)}">
+  if(isRep(t))tags.push(`<span class="m">${ic('repeat','xs')}${repLabel(t)}</span>`);
+  const canPP=!isRep(t)&&!done;
+  return `<div class="swrap" data-id="${esc(t.id)}" data-d="${d}"${canPP?' data-pp="1"':''}><div class="sbg" aria-hidden="true"><span class="sb-done">${ic('check','s')}${done?'إلغاء الإنجاز':'تم'}</span><span class="sb-pp">${canPP?ic('calendar-clock','s')+'تأجيل':''}</span></div><div class="task${done?' done':''}" data-act="edit" data-id="${esc(t.id)}" style="--ac:${safeColor(a.color)};${impStyle(imp)}">
     <div class="ti">${areaIc(a)}</div>
     <div class="tb"><div class="tt">${esc(t.title)}</div><div class="tm">${tags.join('')}</div></div>
     ${(!isRep(t)&&!done)?`<button class="pp" data-act="postpone" data-id="${esc(t.id)}" aria-label="تأجيل إلى تاريخ">${ic('calendar-clock')}</button>`:''}
     <button class="chk" data-act="toggle" data-id="${esc(t.id)}" data-d="${d}" aria-label="${done?'إلغاء الإنجاز':'تم الإنجاز'}"><span>${ic('check')}</span></button>
-  </div>`;
+  </div></div>`;
 }
 function groupHTML(items,showDone){
   if(!items.length)return '';
@@ -437,15 +467,17 @@ function viewToday(){
   return `<div class="strip" id="strip">${strip}</div>${filters}${nxt}${dayTitle}${body}`;
 }
 function viewUpcoming(){
-  const td=today();let h='';
+  const td=today();let h='';const seen=new Set();
   for(let i=1;i<=14;i++){
     const d=addDays(td,i);
-    const items=itemsFor(d).filter(it=>!isDone(it.t,it.d));
+    const items=itemsFor(d).filter(it=>!isDone(it.t,it.d)&&!(isRep(it.t)&&seen.has(it.t.id)));
+    items.forEach(it=>{if(isRep(it.t))seen.add(it.t.id)});
     if(!items.length)continue;
     h+=`<div class="date-h">${i===1?'غداً · ':''}${longDate(d)}</div>`+items.sort(sortItems).map(taskCard).join('');
   }
-  return h||`<div class="empty">${ic('calendar-check')}لا مهام مجدولة خلال الأسبوعين القادمين</div>`;
+  return (h?h+`<p class="hint" style="text-align:center;margin-top:16px">المهام المتكررة تظهر مرة واحدة عند أقرب موعد لها.</p>`:'')||`<div class="empty">${ic('calendar-check')}لا مهام مجدولة خلال الأسبوعين القادمين</div>`;
 }
+
 const normQ=x=>String(x||'').toLowerCase().replace(/[\u064B-\u0652\u0640]/g,'').replace(/[أإآ]/g,'ا').replace(/ى/g,'ي').replace(/ة/g,'ه');
 function searchResults(){
   const q=normQ(V.q).trim();
@@ -518,6 +550,8 @@ function renderRing(){
   const left=total-done;
   $('h-sub').textContent=total?(left?`متبقي ${left} من ${total} مهام اليوم`:'أنجزت كل مهام اليوم'):'يوم خالٍ من المهام';
   $('h-date').textContent=longDate(today());
+  $('mb-d').textContent=longDate(today());
+  $('mb-p').textContent=total?`${done}/${total}`:'';
 }
 function renderSync(){
   const m={local:['','محلي على هذا الجهاز'],sync:['sync','جارٍ المزامنة…'],ok:['ok','متزامن'],err:['err','غير متصل، ستتم المزامنة لاحقاً']}[syncState];
@@ -887,12 +921,13 @@ async function authDo(kind){
 
 /* ============ الأحداث ============ */
 document.addEventListener('click',e=>{
+  if(Date.now()-swipedAt<350){e.preventDefault();return}
   const el=e.target.closest('[data-act]');
   if(!el){if(e.target.id==='scrim')closeSheet();return}
   if(e.target.closest('[data-stop]'))return;
   const a=el.dataset.act,v=el.dataset.v;
   switch(a){
-    case 'tab':V.tab=v;render();window.scrollTo(0,0);break;
+    case 'tab':V.tab=v;render();window.scrollTo(0,0);updateMinibar();break;
     case 'pick':V.date=el.dataset.d;V.showDone=false;render();break;
     case 'filter':V.filter=v||null;render();break;
     case 'showdone':V.showDone=!V.showDone;render();break;
@@ -960,6 +995,34 @@ document.addEventListener('visibilitychange',()=>{
 window.addEventListener('online',()=>{if(session)push()});
 window.addEventListener('offline',()=>{if(session)setSync('err')});
 
+/* ============ السحب: لليسار = تم، لليمين = تأجيل ============ */
+let SW=null,swipedAt=0;
+const SW_MIN=88;
+document.addEventListener('touchstart',e=>{
+  const w=e.target.closest('.swrap');if(!w||e.touches.length!==1||e.target.closest('.chk,.pp'))return;
+  const t=e.touches[0];SW={w,card:w.querySelector('.task'),x:t.clientX,y:t.clientY,dx:0,axis:null};
+},{passive:true});
+document.addEventListener('touchmove',e=>{
+  if(!SW)return;const t=e.touches[0],dx=t.clientX-SW.x,dy=t.clientY-SW.y;
+  if(!SW.axis){if(Math.abs(dx)<10&&Math.abs(dy)<10)return;SW.axis=Math.abs(dx)>Math.abs(dy)?'x':'y'}
+  if(SW.axis!=='x'){SW=null;return}
+  e.preventDefault();
+  let v=dx;if(v>0&&!SW.w.dataset.pp)v=Math.min(v,24); // لا تأجيل للمتكررة أو المنجزة
+  SW.dx=v;SW.w.classList.add('drag');SW.w.classList.toggle('l',v<0);SW.w.classList.toggle('r',v>0);
+  SW.card.style.transform=`translateX(${v}px)`;
+},{passive:false});
+document.addEventListener('touchend',()=>{
+  if(!SW)return;const {w,card,dx}=SW;SW=null;w.classList.remove('drag');
+  if(Math.abs(dx)>8)swipedAt=Date.now();
+  const id=w.dataset.id,d=w.dataset.d;
+  if(dx<=-SW_MIN){w.classList.add('go');card.style.transform='translateX(-110%)';setTimeout(()=>toggleDone(id,d),180);return}
+  card.style.transform='';w.classList.remove('l','r');
+  if(dx>=SW_MIN&&w.dataset.pp)postponeSheet(id);
+});
+document.addEventListener('touchcancel',()=>{if(SW){SW.card.style.transform='';SW.w.classList.remove('drag','l','r');SW=null}});
+/* ============ الشريط المصغّر عند التمرير ============ */
+function updateMinibar(){const h=document.querySelector('.hero');const on=V.tab!=='search'&&h&&h.getBoundingClientRect().bottom<0;$('minibar').classList.toggle('on',!!on);$('minibar').setAttribute('aria-hidden',on?'false':'true')}
+window.addEventListener('scroll',updateMinibar,{passive:true});
 /* ============ بدء التشغيل ============ */
 document.querySelectorAll('.nav button[data-ic]').forEach(b=>b.insertAdjacentHTML('afterbegin',ic(b.dataset.ic,'l')));
 $('fab').innerHTML=ic('plus');

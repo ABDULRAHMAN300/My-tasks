@@ -1,5 +1,6 @@
-const CACHE = 'mahami-v4';
-const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './apple-touch-icon.png'];
+const CACHE = 'mahami-v5';
+const CORE = ['./', './index.html', './manifest.json', './icon-192.png', './apple-touch-icon.png',
+  './vendor/supabase.js', './fonts/cairo-arabic-400.woff2', './fonts/cairo-arabic-700.woff2', './fonts/cairo-latin-400.woff2', './fonts/cairo-latin-700.woff2'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -17,7 +18,7 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
-  if (url.origin !== location.origin) return; // never cache Supabase, fonts or CDN
+  if (url.origin !== location.origin) return; // never cache Supabase API calls
 
   if (req.mode === 'navigate') {
     e.respondWith(
